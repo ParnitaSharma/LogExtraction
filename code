@@ -1,0 +1,120 @@
+using System;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.IO;
+using System.Text;
+
+namespace LogExtractionProject
+{
+
+    class Program
+    {
+       
+
+        static void Main(string[] args)
+        {
+         
+            
+             var a = "-f";
+            String InputCmd = args[0];
+            String t1="";
+            if (InputCmd.Contains(a))
+                
+            {
+                int s = InputCmd.IndexOf(a)+2;
+                t1 = InputCmd.Substring(s);
+            }
+            String ftime = addZero(t1);
+            var date2 = DateTime.ParseExact(ftime, "o", CultureInfo.InvariantCulture,DateTimeStyles.RoundtripKind);
+            var b = "-t";
+             InputCmd = args[1];
+            
+            if (InputCmd.Contains(b))
+
+            {
+                int s1 = InputCmd.IndexOf(b)+2;
+                t1 = InputCmd.Substring(s1);
+            }
+            String ltime = addZero(t1);
+            var date3 = DateTime.ParseExact(ltime, "o", CultureInfo.InvariantCulture,
+                                     DateTimeStyles.RoundtripKind);
+
+
+            var c = "-i";
+            InputCmd = args[2];
+            String t3 = "";
+            if (InputCmd.Contains(c))
+
+            {
+                int s3 = InputCmd.IndexOf(c)+2;
+                
+                t3 = InputCmd.Substring(s3);
+            }
+            String filePath =t3;
+            
+            string[] filePaths = Directory.GetFiles(filePath, "LogFile*");
+
+            foreach(String file in filePaths){
+
+                string[] lines = File.ReadAllLines(file, Encoding.UTF8);
+                foreach (string line in lines)
+                {
+                    
+                    if (line.Split(",").Length <= 1)
+                        continue;
+
+                    var dateFetched = line.Split(",")[0];
+
+
+                    DateTime pk;
+                    CultureInfo culture = CultureInfo.InvariantCulture;
+
+                    var actualDate = addZero(dateFetched);
+
+                    pk = DateTime.ParseExact(actualDate, "o", CultureInfo.InvariantCulture,
+                                          DateTimeStyles.RoundtripKind);
+
+                    if (pk >= date2 && pk <= date3)
+                    {
+                        int start = line.IndexOf(",");
+
+                        String data = line.Substring(start);
+                        Console.WriteLine(data);
+                    }
+                    
+
+                }
+            }
+            
+
+
+        }
+    
+        public static string addZero(String input)
+        {
+            String output;
+            var dat = new DateTime(2020, 5, 25, 20, 30, 50, 234, DateTimeKind.Utc);
+
+            var refTime = dat.ToString("o", CultureInfo.InvariantCulture);
+
+            int start = refTime.LastIndexOf('.');
+            int end = refTime.LastIndexOf('Z');
+            String ms = refTime.Substring(start, end - start);
+
+            start = input.LastIndexOf('.');
+            end = input.LastIndexOf('Z');
+            String df = input.Substring(start, end - start);
+            int nZ = ms.Length - df.Length;
+
+            String part1 = input.Substring(0, input.LastIndexOf('Z'));
+            String part2 = "";
+            for (int ks = 0; ks < nZ ; ks++)
+            {
+                part2 += "0";
+            }
+            output = part1 + part2 + "Z";
+            return output;
+        }
+    }
+}
